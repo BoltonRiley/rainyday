@@ -15,6 +15,14 @@
         text-align: center;
         padding: 20px;
     }
+    button {
+        padding: 10px 20px;
+        font-size: 18px;
+        margin-top: 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
 </style>
 </head>
 <body>
@@ -34,9 +42,13 @@ function checkRain(lat, lon) {
             const rain = data?.current?.precipitation ?? 0;
 
             if (rain > 0) {
-                document.getElementById("output").textContent = "COMPLEX TEXT";
+                document.getElementById("output").innerHTML = `
+                    <h1>Welcome to rainy day</h1>
+                    <button onclick="alert('Game starting...')">Play</button>
+                `;
             } else {
-                document.getElementById("output").textContent = "SIMPLE TEXT";
+                document.getElementById("output").textContent =
+                    "The storm is growing, but you cannot enter until the skies open!";
             }
         })
         .catch(() => {
@@ -47,7 +59,6 @@ function checkRain(lat, lon) {
 
 function getLocation() {
     if (!navigator.geolocation) {
-        // No geolocation → use Melbourne
         checkRain(MELBOURNE.lat, MELBOURNE.lon);
         return;
     }
@@ -59,7 +70,6 @@ function getLocation() {
             checkRain(lat, lon);
         },
         () => {
-            // Permission denied → use Melbourne
             checkRain(MELBOURNE.lat, MELBOURNE.lon);
         }
     );
