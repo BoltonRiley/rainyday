@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rain Checker</title>
+<style>
+    body {
+        background: black;
+        color: white;
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: center;
+        padding: 20px;
+    }
+</style>
+</head>
+<body>
+
+<div id="output">Checking weather…</div>
+
+<script>
+// Melbourne fallback coordinates
+const MELBOURNE = { lat: -37.8136, lon: 144.9631 };
+
+function checkRain(lat, lon) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=precipitation`;
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            const rain = data?.current?.precipitation ?? 0;
+
+            if (rain > 0) {
+                document.getElementById("output").textContent = "COMPLEX TEXT";
+            } else {
+                document.getElementById("output").textContent = "SIMPLE TEXT";
+            }
+        })
+        .catch(() => {
+            document.getElementById("output").textContent =
+                "Error checking weather.";
+        });
+}
+
+function getLocation() {
+    if (!navigator.geolocation) {
+        // No geolocation → use Melbourne
+        checkRain(MELBOURNE.lat, MELBOURNE.lon);
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            checkRain(lat, lon);
+        },
+        () => {
+            // Permission denied → use Melbourne
+            checkRain(MELBOURNE.lat, MELBOURNE.lon);
+        }
+    );
+}
+
+getLocation();
+</script>
+
+</body>
+</html>
