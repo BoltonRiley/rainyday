@@ -160,7 +160,7 @@ function startNewGame() {
 }
 
 function buildUI() {
-    // Build unlock buttons
+    // Build unlock buttons (32)
     const unlockGrid = document.getElementById("unlocks");
     unlockGrid.innerHTML = "";
     for (let i = 0; i < 32; i++) {
@@ -171,7 +171,7 @@ function buildUI() {
         unlockGrid.appendChild(btn);
     }
 
-    // Build chapter selectors
+    // Build 5 chapter selectors
     const chWrap = document.getElementById("chapters");
     chWrap.innerHTML = "";
     for (let c = 1; c <= 5; c++) {
@@ -190,11 +190,11 @@ function buildUI() {
 }
 
 // ------------------------------------------------------------
-// Save System
+// Save System (updated for 5 chapters & no name)
 // ------------------------------------------------------------
 function generateSave() {
     const data = {
-        name: document.getElementById("charName").value,
+        // name removed
         race: document.getElementById("race").value,
         background: document.getElementById("background").value,
         item: document.getElementById("item").value,
@@ -202,10 +202,12 @@ function generateSave() {
         unlocks: []
     };
 
-    for (let c = 1; c <= 8; c++) {
+    // Only 5 chapters
+    for (let c = 1; c <= 5; c++) {
         data.chapters[c] = document.getElementById(`chapter${c}`).value;
     }
 
+    // 32 unlocks
     document.querySelectorAll("#unlocks .toggle").forEach((el, i) => {
         if (el.classList.contains("active")) data.unlocks.push(i);
     });
@@ -221,17 +223,19 @@ function loadSave() {
     try {
         const json = JSON.parse(atob(code));
 
-        startNewGame(); // load UI first
+        startNewGame(); // Load UI first
 
-        document.getElementById("charName").value = json.name;
+        // Name is not loaded — player will type it manually
         document.getElementById("race").value = json.race;
         document.getElementById("background").value = json.background;
         document.getElementById("item").value = json.item;
 
-        for (let c = 1; c <= 8; c++) {
+        // Only 5 chapters
+        for (let c = 1; c <= 5; c++) {
             document.getElementById(`chapter${c}`).value = json.chapters[c];
         }
 
+        // Unlocks
         json.unlocks.forEach(i => {
             document.querySelectorAll("#unlocks .toggle")[i].classList.add("active");
         });
