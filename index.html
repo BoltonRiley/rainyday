@@ -86,12 +86,12 @@
     </div>
 
     <div class="section">
-        <h2>Chapter Choices (8 chapters × 4 choices)</h2>
+        <h2>Chapter Choices (5 chapters × 4 choices)</h2>
         <div id="chapters"></div>
     </div>
 
     <div class="section">
-        <h2>128 Unlocks</h2>
+        <h2>32 Unlocks</h2>
         <div id="unlocks" class="grid"></div>
     </div>
 
@@ -163,7 +163,7 @@ function buildUI() {
     // Build unlock buttons
     const unlockGrid = document.getElementById("unlocks");
     unlockGrid.innerHTML = "";
-    for (let i = 0; i < 128; i++) {
+    for (let i = 0; i < 32; i++) {
         const btn = document.createElement("div");
         btn.className = "toggle";
         btn.textContent = i+1;
@@ -174,7 +174,7 @@ function buildUI() {
     // Build chapter selectors
     const chWrap = document.getElementById("chapters");
     chWrap.innerHTML = "";
-    for (let c = 1; c <= 8; c++) {
+    for (let c = 1; c <= 5; c++) {
         const div = document.createElement("div");
         div.innerHTML = `
             Chapter ${c}: 
