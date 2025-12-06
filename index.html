@@ -3,14 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <title>Rain Checker RPG</title>
+
 <style>
     body {
-        background: black;
+        background: transparent; /* Allow video to show through */
         color: white;
         font-family: sans-serif;
         padding: 20px;
         text-align: center;
+        margin: 0;
+        overflow: hidden;
+        height: 100vh;
     }
+
+    /* Fullscreen background video */
+    #bgvideo {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        min-width: 100%;
+        min-height: 100%;
+        object-fit: cover;
+        z-index: -1;
+    }
+
+    /* Sound toggle button */
+    #soundToggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background: rgba(0,0,0,0.5);
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        color: white;
+        cursor: pointer;
+        z-index: 5;
+    }
+
     button, select, input {
         padding: 10px 15px;
         font-size: 16px;
@@ -18,7 +49,9 @@
         border-radius: 6px;
         border: none;
     }
-    .hidden { display:none; }
+
+    .hidden { display: none; }
+
     .grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -26,18 +59,22 @@
         margin: 10px auto;
         width: 90%;
     }
+
     .toggle {
         padding: 6px;
         background: #222;
         border: 1px solid #555;
         cursor: pointer;
         border-radius: 4px;
+        text-align: center;
     }
+
     .toggle.active {
         background: lime;
         color: black;
         font-weight: bold;
     }
+
     .section {
         border: 1px solid #444;
         padding: 15px;
@@ -45,13 +82,50 @@
         width: 90%;
         border-radius: 6px;
         text-align: left;
+        background: rgba(0, 0, 0, 0.6); /* Slight transparency so text is readable */
+        backdrop-filter: blur(2px);
     }
+
     h2 { margin-top: 0; }
 </style>
 </head>
+
 <body>
 
+<!-- Background Video -->
+<video id="bgvideo" autoplay muted loop playsinline>
+    <source src="video.mp4" type="video/mp4">
+    Your browser does not support video.
+</video>
+
+<!-- Background Audio -->
+<audio id="bgaudio" loop>
+    <source src="audio.mp3" type="audio/mp3">
+    Your browser does not support audio.
+</audio>
+
+<!-- Toggle Sound -->
+<button id="soundToggle">🔇 Sound Off</button>
+
+<!-- Output -->
 <div id="output">Checking weather…</div>
+
+<script>
+    const audio = document.getElementById("bgaudio");
+    const button = document.getElementById("soundToggle");
+    let soundOn = false;
+
+    button.onclick = () => {
+        soundOn = !soundOn;
+        if (soundOn) {
+            audio.play();
+            button.textContent = "🔊 Sound On";
+        } else {
+            audio.pause();
+            button.textContent = "🔇 Sound Off";
+        }
+    };
+</script>
 
 <!-- Character Builder -->
 <div id="gameUI" class="hidden">
@@ -102,7 +176,6 @@
         <textarea id="saveOutput" style="width:90%; height:80px;"></textarea>
     </div>
 </div>
-
 
 <script>
 // Melbourne fallback
@@ -166,7 +239,7 @@ function buildUI() {
     for (let i = 0; i < 32; i++) {
         const btn = document.createElement("div");
         btn.className = "toggle";
-        btn.textContent = i+1;
+        btn.textContent = i + 1;
         btn.onclick = () => btn.classList.toggle("active");
         unlockGrid.appendChild(btn);
     }
@@ -190,11 +263,10 @@ function buildUI() {
 }
 
 // ------------------------------------------------------------
-// Save System (updated for 5 chapters & no name)
+// Save System
 // ------------------------------------------------------------
 function generateSave() {
     const data = {
-        // name removed
         race: document.getElementById("race").value,
         background: document.getElementById("background").value,
         item: document.getElementById("item").value,
@@ -202,12 +274,10 @@ function generateSave() {
         unlocks: []
     };
 
-    // Only 5 chapters
     for (let c = 1; c <= 5; c++) {
         data.chapters[c] = document.getElementById(`chapter${c}`).value;
     }
 
-    // 32 unlocks
     document.querySelectorAll("#unlocks .toggle").forEach((el, i) => {
         if (el.classList.contains("active")) data.unlocks.push(i);
     });
@@ -223,19 +293,16 @@ function loadSave() {
     try {
         const json = JSON.parse(atob(code));
 
-        startNewGame(); // Load UI first
+        startNewGame();
 
-        // Name is not loaded — player will type it manually
         document.getElementById("race").value = json.race;
         document.getElementById("background").value = json.background;
         document.getElementById("item").value = json.item;
 
-        // Only 5 chapters
         for (let c = 1; c <= 5; c++) {
             document.getElementById(`chapter${c}`).value = json.chapters[c];
         }
 
-        // Unlocks
         json.unlocks.forEach(i => {
             document.querySelectorAll("#unlocks .toggle")[i].classList.add("active");
         });
