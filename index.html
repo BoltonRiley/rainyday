@@ -2,315 +2,231 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rain Checker RPG</title>
+<title>Rainy Day</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    body {
-        background: transparent; /* Allow video to show through */
-        color: white;
-        font-family: sans-serif;
-        padding: 20px;
-        text-align: center;
-        margin: 0;
-        overflow: hidden;
-        height: 100vh;
-    }
+/* ======================================================
+   GLOBAL STYLES
+====================================================== */
+body {
+    margin: 0;
+    overflow: hidden;
+    color: white;
+    font-family: sans-serif;
+    background: black;
+}
 
-    /* Fullscreen background video */
-    #bgvideo {
-        position: fixed;
-        right: 0;
-        bottom: 0;
-        min-width: 100%;
-        min-height: 100%;
-        object-fit: cover;
-        z-index: -1;
-    }
+.hidden {
+    display: none;
+}
 
-    /* Sound toggle button */
-    #soundToggle {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 10px 20px;
-        background: rgba(0,0,0,0.5);
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        color: white;
-        cursor: pointer;
-        z-index: 5;
-    }
+/* ======================================================
+   BACKGROUND VIDEO
+====================================================== */
+#bgvideo {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
 
-    button, select, input {
-        padding: 10px 15px;
-        font-size: 16px;
-        margin: 5px;
-        border-radius: 6px;
-        border: none;
-    }
+/* ======================================================
+   AUDIO BUTTON
+====================================================== */
+#soundToggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 10;
+}
 
-    .hidden { display: none; }
+/* ======================================================
+   SECTIONS
+====================================================== */
+section {
+    padding: 20px;
+    text-align: center;
+}
 
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 6px;
-        margin: 10px auto;
-        width: 90%;
-    }
-
-    .toggle {
-        padding: 6px;
-        background: #222;
-        border: 1px solid #555;
-        cursor: pointer;
-        border-radius: 4px;
-        text-align: center;
-    }
-
-    .toggle.active {
-        background: lime;
-        color: black;
-        font-weight: bold;
-    }
-
-    .section {
-        border: 1px solid #444;
-        padding: 15px;
-        margin: 15px auto;
-        width: 90%;
-        border-radius: 6px;
-        text-align: left;
-        background: rgba(0, 0, 0, 0.6); /* Slight transparency so text is readable */
-        backdrop-filter: blur(2px);
-    }
-
-    h2 { margin-top: 0; }
+/* ======================================================
+   GAME CANVAS
+====================================================== */
+#gameCanvas {
+    background: #111;
+    border: 2px solid #555;
+    image-rendering: pixelated;
+}
 </style>
 </head>
 
 <body>
 
-<!-- Background Video -->
+<!-- ======================================================
+     BACKGROUND MEDIA
+====================================================== -->
 <video id="bgvideo" autoplay muted loop playsinline>
-    <source src="video.mp4" type="video/mp4">
-    Your browser does not support video.
+    <source src="assets/video.mp4" type="video/mp4">
 </video>
 
-<!-- Background Audio -->
 <audio id="bgaudio" loop>
-    <source src="audio.mp3" type="audio/mp3">
-    Your browser does not support audio.
+    <source src="assets/audio.mp3" type="audio/mp3">
 </audio>
 
-<!-- Toggle Sound -->
 <button id="soundToggle">🔇 Sound Off</button>
 
-<!-- Output -->
-<div id="output">Checking weather…</div>
+<!-- ======================================================
+     WEATHER / ENTRY GATE
+====================================================== -->
+<section id="weatherGate">
+    <h1>Rainy Day</h1>
+    <p id="output">Checking weather…</p>
+    <button onclick="startGame()">Enter Anyway (Dev)</button>
+</section>
 
+<!-- ======================================================
+     CHARACTER BUILDER (PLACEHOLDER)
+====================================================== -->
+<section id="characterBuilder" class="hidden">
+    <h2>Character Builder</h2>
+    <p>This will be expanded later.</p>
+    <button onclick="startGame()">Start Game</button>
+</section>
+
+<!-- ======================================================
+     MAIN GAME
+====================================================== -->
+<section id="gameSection" class="hidden">
+    <canvas id="gameCanvas" width="640" height="640"></canvas>
+    <p>Move: WASD / Arrow Keys — Interact: E</p>
+</section>
+
+<!-- ======================================================
+     AUDIO LOGIC
+====================================================== -->
 <script>
-    const audio = document.getElementById("bgaudio");
-    const button = document.getElementById("soundToggle");
-    let soundOn = false;
+const audio = document.getElementById("bgaudio");
+const soundBtn = document.getElementById("soundToggle");
+let soundOn = false;
 
-    button.onclick = () => {
-        soundOn = !soundOn;
-        if (soundOn) {
-            audio.play();
-            button.textContent = "🔊 Sound On";
-        } else {
-            audio.pause();
-            button.textContent = "🔇 Sound Off";
-        }
-    };
+soundBtn.onclick = () => {
+    soundOn = !soundOn;
+    if (soundOn) {
+        audio.play();
+        soundBtn.textContent = "🔊 Sound On";
+    } else {
+        audio.pause();
+        soundBtn.textContent = "🔇 Sound Off";
+    }
+};
 </script>
 
-<!-- Character Builder -->
-<div id="gameUI" class="hidden">
-
-    <h1>Character Builder</h1>
-
-    <div class="section">
-        <h2>Basics</h2>
-        Name: <input id="charName" placeholder="Enter name"><br><br>
-
-        Race:
-        <select id="race">
-            <option>Human</option><option>Elf</option><option>Dwarf</option>
-            <option>Orc</option><option>Gnome</option><option>Fae</option>
-        </select>
-
-        Background:
-        <select id="background">
-            <option>Scholar</option><option>Warrior</option><option>Thief</option>
-            <option>Hunter</option><option>Mystic</option><option>Noble</option>
-        </select>
-    </div>
-
-    <div class="section">
-        <h2>Starting Item</h2>
-        <select id="item">
-            <option>Sword</option><option>Dagger</option><option>Bow</option>
-            <option>Staff</option><option>Lantern</option><option>Charm</option>
-            <option>Coin</option><option>Key</option><option>Map</option>
-            <option>Medallion</option>
-        </select>
-    </div>
-
-    <div class="section">
-        <h2>Chapter Choices (5 chapters × 4 choices)</h2>
-        <div id="chapters"></div>
-    </div>
-
-    <div class="section">
-        <h2>32 Unlocks</h2>
-        <div id="unlocks" class="grid"></div>
-    </div>
-
-    <button onclick="generateSave()">Generate Save Code</button>
-
-    <div class="section">
-        <h3>Your Save Code:</h3>
-        <textarea id="saveOutput" style="width:90%; height:80px;"></textarea>
-    </div>
-</div>
-
+<!-- ======================================================
+     SECTION CONTROL
+====================================================== -->
 <script>
-// Melbourne fallback
-const MELBOURNE = { lat: -37.8136, lon: 144.9631 };
+function startGame() {
+    document.getElementById("weatherGate").classList.add("hidden");
+    document.getElementById("characterBuilder").classList.add("hidden");
+    document.getElementById("gameSection").classList.remove("hidden");
+}
+</script>
 
-function checkRain(lat, lon) {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=precipitation`;
+<!-- ======================================================
+     GAME LOOP
+====================================================== -->
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-    fetch(url)
-        .then(r => r.json())
-        .then(data => {
-            const rain = data?.current?.precipitation ?? 0;
+const TILE = 40;
+const MAP_SIZE = 16;
 
-            if (rain > 0) {
-                renderRainMenu();
-            } else {
-                document.getElementById("output").textContent =
-                    "The storm is growing, but you cannot enter until the skies open!";
-            }
-        })
-        .catch(() => {
-            document.getElementById("output").textContent =
-                "Weather check failed.";
-        });
+// 0 = floor, 1 = wall, 2 = interactable
+const map = [
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,1],
+  [1,0,1,1,1,0,1,1,1,0,0,1,1,1,0,1],
+  [1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1],
+  [1,0,1,0,1,1,1,0,1,1,1,1,0,1,0,1],
+  [1,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1],
+  [1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1],
+  [1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1],
+  [1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1],
+  [1,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1],
+  [1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1],
+  [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,1],
+  [1,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1],
+  [1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1],
+  [1,0,2,0,0,0,0,0,0,1,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+const unlocked = new Set();
+
+const player = {
+    x: 1,
+    y: 1
+};
+
+function canMove(x, y) {
+    return map[y]?.[x] !== 1;
 }
 
-function getLocation() {
-    navigator.geolocation.getCurrentPosition(
-        (pos) => checkRain(pos.coords.latitude, pos.coords.longitude),
-        () => checkRain(MELBOURNE.lat, MELBOURNE.lon)
-    );
-}
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-getLocation();
+    for (let y = 0; y < MAP_SIZE; y++) {
+        for (let x = 0; x < MAP_SIZE; x++) {
+            const tile = map[y][x];
 
-// ------------------------------------------------------------
-// UI Builders
-// ------------------------------------------------------------
-function renderRainMenu() {
-    document.getElementById("output").innerHTML = `
-        <h1>Welcome to Rainy Day</h1>
-        
-        <h3>Enter Save Code</h3>
-        <input id="saveInput" placeholder="Paste save code" style="width:70%;"><br>
-        <button onclick="loadSave()">Load Game</button>
-        <br><br>
-        <button onclick="startNewGame()">New Game</button>
-    `;
-}
+            if (tile === 1) ctx.fillStyle = "#444";
+            else if (tile === 2) {
+                ctx.fillStyle = unlocked.has(`${x},${y}`) ? "lime" : "red";
+            } else ctx.fillStyle = "#222";
 
-function startNewGame() {
-    document.getElementById("output").classList.add("hidden");
-    document.getElementById("gameUI").classList.remove("hidden");
-    buildUI();
-}
-
-function buildUI() {
-    // Build unlock buttons (32)
-    const unlockGrid = document.getElementById("unlocks");
-    unlockGrid.innerHTML = "";
-    for (let i = 0; i < 32; i++) {
-        const btn = document.createElement("div");
-        btn.className = "toggle";
-        btn.textContent = i + 1;
-        btn.onclick = () => btn.classList.toggle("active");
-        unlockGrid.appendChild(btn);
-    }
-
-    // Build 5 chapter selectors
-    const chWrap = document.getElementById("chapters");
-    chWrap.innerHTML = "";
-    for (let c = 1; c <= 5; c++) {
-        const div = document.createElement("div");
-        div.innerHTML = `
-            Chapter ${c}: 
-            <select id="chapter${c}">
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-                <option value="D">D</option>
-            </select>
-        `;
-        chWrap.appendChild(div);
-    }
-}
-
-// ------------------------------------------------------------
-// Save System
-// ------------------------------------------------------------
-function generateSave() {
-    const data = {
-        race: document.getElementById("race").value,
-        background: document.getElementById("background").value,
-        item: document.getElementById("item").value,
-        chapters: {},
-        unlocks: []
-    };
-
-    for (let c = 1; c <= 5; c++) {
-        data.chapters[c] = document.getElementById(`chapter${c}`).value;
-    }
-
-    document.querySelectorAll("#unlocks .toggle").forEach((el, i) => {
-        if (el.classList.contains("active")) data.unlocks.push(i);
-    });
-
-    const encoded = btoa(JSON.stringify(data));
-    document.getElementById("saveOutput").value = encoded;
-}
-
-function loadSave() {
-    let code = document.getElementById("saveInput").value.trim();
-    if (!code) return alert("No save code entered");
-
-    try {
-        const json = JSON.parse(atob(code));
-
-        startNewGame();
-
-        document.getElementById("race").value = json.race;
-        document.getElementById("background").value = json.background;
-        document.getElementById("item").value = json.item;
-
-        for (let c = 1; c <= 5; c++) {
-            document.getElementById(`chapter${c}`).value = json.chapters[c];
+            ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
         }
-
-        json.unlocks.forEach(i => {
-            document.querySelectorAll("#unlocks .toggle")[i].classList.add("active");
-        });
-
-    } catch (e) {
-        alert("Invalid save code.");
     }
+
+    ctx.fillStyle = "cyan";
+    ctx.fillRect(player.x * TILE + 8, player.y * TILE + 8, 24, 24);
 }
+
+window.addEventListener("keydown", e => {
+    let nx = player.x;
+    let ny = player.y;
+
+    if (e.key === "ArrowUp" || e.key === "w") ny--;
+    if (e.key === "ArrowDown" || e.key === "s") ny++;
+    if (e.key === "ArrowLeft" || e.key === "a") nx--;
+    if (e.key === "ArrowRight" || e.key === "d") nx++;
+
+    if (canMove(nx, ny)) {
+        player.x = nx;
+        player.y = ny;
+    }
+
+    if (e.key.toLowerCase() === "e") {
+        const key = `${player.x},${player.y}`;
+        if (map[player.y][player.x] === 2) {
+            unlocked.has(key) ? unlocked.delete(key) : unlocked.add(key);
+        }
+    }
+
+    draw();
+});
+
+draw();
 </script>
 
 </body>
