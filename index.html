@@ -1,261 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Rainy Day RPG</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<title>RainyDay</title>
+		<style>
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
 
-<style>
 body {
-    margin: 0;
-    overflow: hidden;
-    color: white;
-    font-family: sans-serif;
-    background: black;
-}
-.hidden { display: none; }
-
-#bgvideo {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -1;
+	color: white;
+	background-color: black;
+	overflow: hidden;
+	touch-action: none;
 }
 
-#soundToggle {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 10px 16px;
-    background: rgba(0,0,0,0.6);
-    border: none;
-    border-radius: 6px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    z-index: 10;
+#canvas {
+	display: block;
 }
 
-section {
-    padding: 20px;
-    text-align: center;
+#canvas:focus {
+	outline: none;
 }
 
-#gameCanvas {
-    background: #111;
-    border: 2px solid #555;
-    image-rendering: pixelated;
+#status, #status-splash, #status-progress {
+	position: absolute;
+	left: 0;
+	right: 0;
 }
 
-#optionDisplay {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    background: rgba(0,0,0,0.6);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-weight: bold;
-}
-</style>
-</head>
-
-<body>
-
-<!-- BACKGROUND MEDIA -->
-<video id="bgvideo" autoplay muted loop playsinline>
-    <source src="assets/video.mp4" type="video/mp4">
-</video>
-
-<audio id="bgaudio" loop>
-    <source src="assets/audio.mp3" type="audio/mp3">
-</audio>
-
-<button id="soundToggle">🔇 Sound Off</button>
-
-<div id="optionDisplay" class="hidden">Option: None</div>
-
-<!-- WEATHER / ENTRY GATE -->
-<section id="weatherGate">
-    <h1>Rainy Day RPG</h1>
-    <p id="output">Checking weather…</p>
-    <button onclick="startGame()">Enter Anyway (Dev)</button>
-</section>
-
-<!-- CHARACTER BUILDER -->
-<section id="characterBuilder" class="hidden">
-    <h2>Character Builder</h2>
-    <p>This will be expanded later.</p>
-    <button onclick="startGame()">Start Game</button>
-</section>
-
-<!-- MAIN GAME -->
-<section id="gameSection" class="hidden">
-    <canvas id="gameCanvas" width="640" height="640"></canvas>
-    <p>Move: WASD / Arrow Keys — Interact: E</p>
-</section>
-
-<!-- CHAPTER END -->
-<section id="chapterEnd" class="hidden">
-    <h1>Chapter Complete</h1>
-    <p>You step through the threshold. The rain changes.</p>
-
-    <h3>Pick an option:</h3>
-    <button onclick="selectOption('left')">Left</button>
-    <button onclick="selectOption('middle')">Middle</button>
-    <button onclick="selectOption('right')">Right</button>
-
-    <h3>Save Code:</h3>
-    <textarea id="saveOutput" style="width:90%; height:60px;" readonly></textarea>
-</section>
-
-<!-- AUDIO LOGIC -->
-<script>
-const audio = document.getElementById("bgaudio");
-const soundBtn = document.getElementById("soundToggle");
-let soundOn = false;
-soundBtn.onclick = () => {
-    soundOn = !soundOn;
-    if (soundOn) { audio.play(); soundBtn.textContent = "🔊 Sound On"; }
-    else { audio.pause(); soundBtn.textContent = "🔇 Sound Off"; }
-};
-</script>
-
-<!-- SECTION CONTROL -->
-<script>
-function startGame() {
-    window.location.href = "RainDay.html";
-}
-</script>
-
-<!-- GAME LOOP -->
-<script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-const TILE = 40;
-const MAP_SIZE = 16;
-
-// 0 = floor, 1 = wall, 2 = interactable, 3 = exit
-const map = [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,1],
-  [1,0,1,1,1,0,1,1,1,0,0,1,1,1,0,1],
-  [1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1],
-  [1,0,1,0,1,1,1,0,1,1,1,1,0,1,0,1],
-  [1,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1],
-  [1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1],
-  [1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1],
-  [1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1],
-  [1,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1],
-  [1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1],
-  [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,1],
-  [1,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1],
-  [1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1],
-  [1,0,2,0,0,0,0,0,0,1,0,0,0,0,3,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-];
-
-const unlocked = new Set();
-const player = { x: 1, y: 1 };
-let currentChapter = 1;
-const optionDisplay = document.getElementById("optionDisplay");
-
-// DRAW MAP
-function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for (let y=0; y<MAP_SIZE; y++) {
-        for (let x=0; x<MAP_SIZE; x++) {
-            const tile = map[y][x];
-            if (tile === 1) ctx.fillStyle="#444";
-            else if (tile === 2) ctx.fillStyle = unlocked.has(`${x},${y}`) ? "lime" : "red";
-            else if (tile === 3) ctx.fillStyle="gold";
-            else ctx.fillStyle="#222";
-            ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
-        }
-    }
-    ctx.fillStyle="cyan";
-    ctx.fillRect(player.x*TILE+8, player.y*TILE+8, 24,24);
+#status, #status-splash {
+	top: 0;
+	bottom: 0;
 }
 
-// COLLISION
-function canMove(x,y) { return map[y]?.[x] !==1; }
-
-// INPUT
-window.addEventListener("keydown", e=>{
-    let nx=player.x, ny=player.y;
-    if(e.key==="ArrowUp"||e.key==="w") ny--;
-    if(e.key==="ArrowDown"||e.key==="s") ny++;
-    if(e.key==="ArrowLeft"||e.key==="a") nx--;
-    if(e.key==="ArrowRight"||e.key==="d") nx++;
-
-    if(canMove(nx,ny)){ player.x=nx; player.y=ny; }
-
-    // Interact
-    if(e.key.toLowerCase()==="e"){
-        const key=`${player.x},${player.y}`;
-        if(map[player.y][player.x]===2){
-            unlocked.has(key)?unlocked.delete(key):unlocked.add(key);
-        }
-    }
-
-    // Chapter exit
-    if(map[player.y][player.x]===3){
-        endChapter();
-        return;
-    }
-
-    draw();
-});
-
-draw();
-
-// GAME SAVE
-let gameSave = { chapter:1, unlocked:new Set(), choices:{} };
-
-function endChapter(){
-    document.getElementById("gameSection").classList.add("hidden");
-    document.getElementById("chapterEnd").classList.remove("hidden");
-    gameSave.chapter = currentChapter;
-    gameSave.unlocked = new Set(unlocked);
-    updateSaveCode();
+#status {
+	background-color: #242424;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	visibility: hidden;
 }
 
-function updateSaveCode(){
-    const saveData = {
-        chapter: gameSave.chapter,
-        unlocked: Array.from(gameSave.unlocked),
-        choices: gameSave.choices
-    };
-    document.getElementById("saveOutput").value = btoa(JSON.stringify(saveData));
+#status-splash {
+	max-height: 100%;
+	max-width: 100%;
+	margin: auto;
 }
 
-function selectOption(option){
-    gameSave.choices[currentChapter] = option;
-    optionDisplay.classList.remove("hidden");
-    optionDisplay.textContent = "Option: "+option;
-    currentChapter++;
-    document.getElementById("chapterEnd").classList.add("hidden");
-    document.getElementById("gameSection").classList.remove("hidden");
-    // Reset player for now
-    player.x=1; player.y=1;
-    draw();
+#status-splash.show-image--false {
+	display: none;
 }
 
-// LOAD SAVE
-function loadSave(code){
-    try{
-        const data = JSON.parse(atob(code));
-        currentChapter = data.chapter;
-        unlocked.clear();
-        data.unlocked.forEach(k=>unlocked.add(k));
-        gameSave.choices = data.choices;
-        startGame();
-        draw();
-    }catch(e){ alert("Invalid save code"); }
+#status-splash.fullsize--true {
+	height: 100%;
+	width: 100%;
+	object-fit: contain;
 }
-</script>
 
-</body>
+#status-splash.use-filter--false {
+	image-rendering: pixelated;
+}
+
+#status-progress, #status-notice {
+	display: none;
+}
+
+#status-progress {
+	bottom: 10%;
+	width: 50%;
+	margin: 0 auto;
+}
+
+#status-notice {
+	background-color: #5b3943;
+	border-radius: 0.5rem;
+	border: 1px solid #9b3943;
+	color: #e0e0e0;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	line-height: 1.3;
+	margin: 0 2rem;
+	overflow: hidden;
+	padding: 1rem;
+	text-align: center;
+	z-index: 1;
+}
+		</style>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="RainyDay.icon.png" />
+<link rel="apple-touch-icon" href="RainyDay.apple-touch-icon.png"/>
+
+	</head>
+	<body>
+		<canvas id="canvas">
+			Your browser does not support the canvas tag.
+		</canvas>
+
+		<noscript>
+			Your browser does not support JavaScript.
+		</noscript>
+
+		<div id="status">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="RainyDay.png" alt="">
+			<progress id="status-progress"></progress>
+			<div id="status-notice"></div>
+		</div>
+
+		<script src="RainyDay.js"></script>
+		<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"RainyDay","experimentalVK":false,"fileSizes":{"RainyDay.pck":1719152,"RainyDay.wasm":36145869},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_THREADS_ENABLED = false;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+	const statusOverlay = document.getElementById('status');
+	const statusProgress = document.getElementById('status-progress');
+	const statusNotice = document.getElementById('status-notice');
+
+	let initializing = true;
+	let statusMode = '';
+
+	function setStatusMode(mode) {
+		if (statusMode === mode || !initializing) {
+			return;
+		}
+		if (mode === 'hidden') {
+			statusOverlay.remove();
+			initializing = false;
+			return;
+		}
+		statusOverlay.style.visibility = 'visible';
+		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+		statusMode = mode;
+	}
+
+	function setStatusNotice(text) {
+		while (statusNotice.lastChild) {
+			statusNotice.removeChild(statusNotice.lastChild);
+		}
+		const lines = text.split('\n');
+		lines.forEach((line) => {
+			statusNotice.appendChild(document.createTextNode(line));
+			statusNotice.appendChild(document.createElement('br'));
+		});
+	}
+
+	function displayFailureNotice(err) {
+		console.error(err);
+		if (err instanceof Error) {
+			setStatusNotice(err.message);
+		} else if (typeof err === 'string') {
+			setStatusNotice(err);
+		} else {
+			setStatusNotice('An unknown error occurred.');
+		}
+		setStatusMode('notice');
+		initializing = false;
+	}
+
+	const missing = Engine.getMissingFeatures({
+		threads: GODOT_THREADS_ENABLED,
+	});
+
+	if (missing.length !== 0) {
+		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+			let serviceWorkerRegistrationPromise;
+			try {
+				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+			} catch (err) {
+				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
+			}
+			// There's a chance that installing the service worker would fix the issue
+			Promise.race([
+				serviceWorkerRegistrationPromise.then((registration) => {
+					if (registration != null) {
+						return Promise.reject(new Error('Service worker already exists.'));
+					}
+					return registration;
+				}).then(() => engine.installServiceWorker()),
+				// For some reason, `getRegistration()` can stall
+				new Promise((resolve) => {
+					setTimeout(() => resolve(), 2000);
+				}),
+			]).then(() => {
+				// Reload if there was no error.
+				window.location.reload();
+			}).catch((err) => {
+				console.error('Error while registering service worker:', err);
+			});
+		} else {
+			// Display the message as usual
+			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+			displayFailureNotice(missingMsg + missing.join('\n'));
+		}
+	} else {
+		setStatusMode('progress');
+		engine.startGame({
+			'onProgress': function (current, total) {
+				if (current > 0 && total > 0) {
+					statusProgress.value = current;
+					statusProgress.max = total;
+				} else {
+					statusProgress.removeAttribute('value');
+					statusProgress.removeAttribute('max');
+				}
+			},
+		}).then(() => {
+			setStatusMode('hidden');
+		}, displayFailureNotice);
+	}
+}());
+		</script>
+	</body>
 </html>
+
