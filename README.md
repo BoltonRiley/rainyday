@@ -1,2 +1,2 @@
 # rainyday
-Rainy Day is a static game that allows users to have a unique and fun experience whilst hopefully being a fully static webpage hosted in Github
+Rainy Day is my first attempt at making an RPG game. I purchased the sprites, added them to Godot and generated the animations. I had Claude assist me with setting up the interactions between objects. 
